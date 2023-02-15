@@ -1,9 +1,7 @@
 import cv2
 import mediapipe as mp
-import sys
-sys.path.append('handGestureModel')
-from handGestureModel.model import KeyPointClassifier
 import tools
+from landmarks_classification import classification_utils
 
 # Init video
 # video = cv2.VideoCapture(0)
@@ -19,8 +17,11 @@ mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(model_complexity=0, min_detection_confidence=0.6, min_tracking_confidence=0.5)
 
 # Hand poses classification
-pose_classifier = KeyPointClassifier()
-hand_states_labels = tools.get_labels_list('handGestureModel/model/keypoint_classifier/keypoint_classifier_label.csv')
+model_path='data/keypoint_classifier.tflite'
+print(model_path)
+
+pose_classifier = classification_utils.KeyPointClassifierLoader(model_path='landmarks_classification/data/keypoint_classifier.tflite')
+hand_states_labels = tools.get_labels_list('landmarks_classification/data/keypoint_classifier_label.csv')
 
 ##### Real-time tracking
 while True:
