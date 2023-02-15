@@ -1,5 +1,9 @@
-import tools
+import sys
 
-names = tools.getClassNames("ssd_mobilenet_v3_files/coco.names")
+from handGestureModel.model import KeyPointClassifier
 
-print(tools.getClassNameFromId(names, 53))
+sys.path.append('handGestureModel')
+
+classifier = KeyPointClassifier()
+
+print(classifier)

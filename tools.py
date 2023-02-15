@@ -1,6 +1,9 @@
 import colorsys
 import cv2
 import numpy as np
+import copy
+import itertools
+import csv
 
 
 def trackerCreate(tracker_type):
@@ -267,3 +270,112 @@ def convertNormCoordToImageCoord(x, y, w_image, h_image):
         _type_: x, y in the image size reference
     """
     return int(x*w_image), int(y*h_image)
+
+
+def get_labels_list(adress):
+    """Load labels for hand gesture classification in a list from a csv file
+
+    Args:
+        adress (String): adress of the csv file containing labels
+
+    Returns:
+        (list) : list with all labels
+    """
+    with open(adress,
+              encoding='utf-8-sig') as f:
+        keypoint_classifier_labels = csv.reader(f)
+        keypoint_classifier_labels = [
+            row[0] for row in keypoint_classifier_labels
+        ]
+        
+    return keypoint_classifier_labels
+
+
+def pre_process_landmark(landmark_list):
+    """ Transforms landmark list [[x, y], ...] to a format fitting the classification model
+        This method is an adaptation of the pre_process_landmark() method in the app.py 
+        file of the following repo :
+        https://github.com/Kazuhito00/hand-gesture-recognition-using-mediapipe
+
+    Args:
+        landmarks (landmarks list): list containing a landmarks coordinates list : [[x, y], [x, y], ...] 
+        returned by get_landmark_coord_list().
+
+    Returns:
+        list: List containing relative coordinates normalized and flatten 
+    """
+    temp_landmark_list = copy.deepcopy(landmark_list)
+
+    # Get coordinates relatively to the 0 hand landmark (base of the hand palm)
+    base_x, base_y = 0, 0
+    for index, landmark_point in enumerate(temp_landmark_list):
+        if index == 0:
+            base_x, base_y = landmark_point[0], landmark_point[1]
+
+        temp_landmark_list[index][0] = temp_landmark_list[index][0] - base_x
+        temp_landmark_list[index][1] = temp_landmark_list[index][1] - base_y
+
+    # Flatten the coordinates list
+    temp_landmark_list = list(itertools.chain.from_iterable(temp_landmark_list))
+
+    # Normalize the values
+    max_value = max(list(map(abs, temp_landmark_list)))
+
+    def normalize_(n):
+        return n / max_value
+
+    temp_landmark_list = list(map(normalize_, temp_landmark_list))
+
+    return temp_landmark_list
+
+
+def get_landmarks_box(landmarks, image_width, image_height):
+    """ Calculates bounding box coordinates around a landmarks group (hand)
+        This method is an adaptation of the calc_bounding_rect() method in the app.py 
+        file of the following repo :
+        https://github.com/Kazuhito00/hand-gesture-recognition-using-mediapipe
+
+    Args:
+        landmarks (landmarks): landmarks corresponding to one hand
+        image_width (int): width of the image
+        image_height (int): height of the image
+
+    Returns:
+        list: bounding box
+    """
+
+    landmark_array = np.empty((0, 2), int)
+
+    for _, landmark in enumerate(landmarks.landmark):
+        landmark_x = min(int(landmark.x * image_width), image_width - 1)
+        landmark_y = min(int(landmark.y * image_height), image_height - 1)
+        landmark_point = [np.array((landmark_x, landmark_y))]
+        landmark_array = np.append(landmark_array, landmark_point, axis=0)
+
+    x, y, w, h = cv2.boundingRect(landmark_array)
+
+    return [x, y, x + w, y + h]
+
+def get_landmark_coord_list(landmarks, image_width, image_height):
+    """ Calculates coordinates in the image of every landmark of one landmarks group (hand)
+        This method is an adaptation of the calc_landmark_list() method in the app.py 
+        file of the following repo :
+        https://github.com/Kazuhito00/hand-gesture-recognition-using-mediapipe
+
+    Args:
+        landmarks (landmarks): landmarks corresponding to one hand
+        image_width (int): width of the image
+        image_height (int): height of the image
+
+    Returns:
+        list: landmark coordinates list
+    """
+
+    landmark_point = []
+
+    for _, landmark in enumerate(landmarks.landmark):
+        landmark_x = min(int(landmark.x * image_width), image_width - 1)
+        landmark_y = min(int(landmark.y * image_height), image_height - 1)
+        landmark_point.append([landmark_x, landmark_y])
+
+    return landmark_point
