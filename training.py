@@ -1,12 +1,11 @@
 import numpy as np
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
-import model
-import classification_utils
+from tello_vision_control.utils import classification_utils
 
-dataset = 'data/keypoint.csv'
-model_save_path = 'data/keypoint_classifier.hdf5'
-tflite_save_path = 'data/keypoint_classifier.tflite'
+dataset = 'data_test/keypoint.csv'
+model_save_path = 'data_test/keypoint_classifier.hdf5'
+tflite_save_path = 'data_test/keypoint_classifier.tflite'
 NUM_CLASSES = 3
 
 ### Prepare data
@@ -15,7 +14,7 @@ y_dataset = np.loadtxt(dataset, delimiter=',', dtype='int32', usecols=(0))
 X_train, X_test, y_train, y_test = train_test_split(X_dataset, y_dataset, train_size=0.75, random_state=42)
 
 ### Create classifier
-classifier = model.create_landmarks_classifier(NUM_CLASSES)
+classifier = classification_utils.create_landmarks_classifier(NUM_CLASSES)
 classifier.summary()
 
 
@@ -35,7 +34,7 @@ classifier.fit(
     X_train,
     y_train,
     epochs=1000,
-    batch_size=128,
+    batch_size=64,
     validation_data=(X_test, y_test),
     callbacks=[cp_callback, es_callback]
 )
