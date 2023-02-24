@@ -3,9 +3,9 @@ import tensorflow as tf
 from sklearn.model_selection import train_test_split
 from tello_vision_control.utils import classification_utils
 
-dataset = 'data_test/keypoint.csv'
-model_save_path = 'data_test/keypoint_classifier.hdf5'
-tflite_save_path = 'data_test/keypoint_classifier.tflite'
+dataset = 'model2/keypoint2.csv'
+model_save_path = 'model2/keypoint_classifier2.hdf5'
+tflite_save_path = 'model2/keypoint_classifier2.tflite'
 NUM_CLASSES = 3
 
 ### Prepare data
@@ -34,7 +34,7 @@ classifier.fit(
     X_train,
     y_train,
     epochs=1000,
-    batch_size=64,
+    batch_size=128,
     validation_data=(X_test, y_test),
     callbacks=[cp_callback, es_callback]
 )

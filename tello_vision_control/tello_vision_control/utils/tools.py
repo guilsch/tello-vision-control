@@ -5,6 +5,15 @@ import copy
 import itertools
 import csv
 
+import os
+import tello_vision_control
+
+package_dir = os.path.dirname(tello_vision_control.__file__)
+
+
+def test():
+    print("test ok")
+    return
 
 def trackerCreate(tracker_type):
     
@@ -272,7 +281,7 @@ def convertNormCoordToImageCoord(x, y, w_image, h_image):
     return int(x*w_image), int(y*h_image)
 
 
-def get_labels_list(adress):
+def get_labels_list(adress=None):
     """Load labels for hand gesture classification in a list from a csv file
 
     Args:
@@ -281,6 +290,9 @@ def get_labels_list(adress):
     Returns:
         (list) : list with all labels
     """
+    if adress is None:
+        adress = os.path.join(package_dir, 'data', 'keypoint_classifier_label.csv')
+    
     with open(adress,
               encoding='utf-8-sig') as f:
         keypoint_classifier_labels = csv.reader(f)

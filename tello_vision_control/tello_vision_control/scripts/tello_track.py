@@ -1,4 +1,4 @@
-from tello_tools import *
+from tello_vision_control.utils import tello_tools
 import keyboard
 from djitellopy import tello
 import cv2
@@ -12,12 +12,12 @@ debug = False
 
 
 #### Initialization
-drone = initTello()
+drone = tello_tools.initTello()
 
 # PID relative to Yaw, y, z, in the drone frame
-PID_YAW = PID(0.5, 0, 0.5)
-PID_X = PID(3, 0, 3)
-PID_Z = PID(0.5, 0, 0.5)
+PID_YAW = tello_tools.PID(0.5, 0, 0.5)
+PID_X = tello_tools.PID(3, 0, 3)
+PID_Z = tello_tools.PID(0.5, 0, 0.5)
 
 if not debug:
     print('Drone taking off')
@@ -40,15 +40,15 @@ while True:
         print('Landing done')
         break
     
-    frame = getTelloFrame(drone, w, h)
-    success, frame, faceCoord = findFace(frame)
-    err = getError(success, faceCoord, vidCenter)
+    frame = tello_tools.getTelloFrame(drone, w, h)
+    success, frame, faceCoord = tello_tools.findFace(frame)
+    err = tello_tools.getError(success, faceCoord, vidCenter)
     
     # print(f"faceCoord[0] = {str(faceCoord[0])}")
     # print(f"vidCenter[0] = {str(vidCenter[0])}")
     # print(f"err = {str(err)}")
     
-    com_rc = trackFace(drone, PID_X, PID_Z, PID_YAW, err, debug=debug)
+    com_rc = tello_tools.trackFace(drone, PID_X, PID_Z, PID_YAW, err, debug=debug)
     
     # print(f"u_yaw = {str(com_rc)}")
     

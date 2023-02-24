@@ -1,9 +1,9 @@
 Metadata-Version: 1.0
 Name: tello-vision-control
 Version: 1.0.0
-Summary: Un package Python
+Summary: Python package made for controlling a tello drone with computer vision
 Home-page: UNKNOWN
-Author: Moi
+Author: Guilhem Schena
 Author-email: UNKNOWN
 License: UNKNOWN
 Description: UNKNOWN

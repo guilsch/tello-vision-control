@@ -1,9 +1,11 @@
 setup.py
+tello_vision_control/__init__.py
 tello_vision_control.egg-info/PKG-INFO
 tello_vision_control.egg-info/SOURCES.txt
 tello_vision_control.egg-info/dependency_links.txt
+tello_vision_control.egg-info/requires.txt
 tello_vision_control.egg-info/top_level.txt
-utils/__init__.py
-utils/classification_utils.py
-utils/tello_tools.py
-utils/tools.py
+tello_vision_control/utils/__init__.py
+tello_vision_control/utils/classification_utils.py
+tello_vision_control/utils/tello_tools.py
+tello_vision_control/utils/tools.py

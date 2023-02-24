@@ -1,5 +1,5 @@
 import cv2
-import tools
+from tello_vision_control import tools
 
 ##### Init video
 video = cv2.VideoCapture("videos/xyz_slow.mp4")

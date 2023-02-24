@@ -1,6 +1,6 @@
 from djitellopy import Tello
 import cv2
-import tools
+from tello_vision_control.utils import tools
 import time
 import numpy as np
 import math
@@ -154,3 +154,15 @@ def getError(success, faceCoord, vidCenter, faceWidthReference = 50):
         return [err_X, err_Z, err_YAW]
     else:
         return [0, 0, 0]
+    
+    
+def do_trickshot_from_hand_position_id(drone, hand_pose_id):
+    
+    if hand_pose_id == 0:
+        pass
+    elif hand_pose_id == 1:
+        pass
+    elif hand_pose_id == 2:
+        drone.flip_forward()
+    
+    return
