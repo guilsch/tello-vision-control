@@ -1,27 +1,42 @@
-import tools
-
 import cv2
-import numpy as np
+from tello_vision_control import tools
+
+########## SETUP ##########
+###########################
+
+##### Init tracker  
+trackerType = 'MEDIANFLOW'
+tracker = tools.trackerCreate(trackerType)
+
 
 ##### Init video
-video = cv2.VideoCapture("videos/occlusion.mp4")
-# video = cv2.VideoCapture(0)
+video_adress = None
+if video_adress is not None:
+    # Video read from adress provided
+    video = cv2.VideoCapture(video_adress)
+else:
+    # Video read from camera of the device
+    video = cv2.VideoCapture(0)
 
 vidCenter = tools.getVideoCenterCoord(video)
 
-##### First frame, select object
+
+######## PRE-LOOP #########
+###########################
+
+# First frame, select object
 success, frame = video.read()
 
-if not success:
-    print('Video not read')
-   
-tracker = tools.trackerCreate('TLD')
-bbox = cv2.selectROI(frame, False)
-ok = tracker.init(frame, bbox)
+# Init tracker
+bboxInit = cv2.selectROI(frame, False)
+tracker.init(frame, bboxInit)
 
-initWidth = bbox[2]
+# Define depth of reference
+initWidth = bboxInit[2]
 
-##### Real-time tracking
+
+########## LOOP ###########
+###########################
 while True:
 
     success, frame = video.read()

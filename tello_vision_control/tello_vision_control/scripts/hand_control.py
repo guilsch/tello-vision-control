@@ -17,6 +17,10 @@ from tello_vision_control import tools
 from tello_vision_control import classification_utils
 from tello_vision_control import tello_tools
 
+
+########## SETUP ##########
+###########################
+
 ##### Parameters
 classifier_file = None
 classifier_labels_file = None
@@ -52,7 +56,8 @@ else:
 w_image = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
 h_image = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-##### Real-time tracking
+########## LOOP ###########
+###########################
 if drone_mode:
     drone.takeoff()
     print('Takeoff done')

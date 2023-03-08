@@ -1,23 +1,147 @@
-import colorsys
+""" This file contains all methods used to find objects in a video. They can all be used without drone.
+
+"""
+
 import cv2
 import numpy as np
 import copy
 import itertools
 import csv
-
 import os
 import tello_vision_control
 
+
+######## PARAMETERS #######
+###########################
+
 package_dir = os.path.dirname(tello_vision_control.__file__)
 
+
+########## TESTS ##########
+###########################
 
 def test():
     print("test ok")
     return
 
-def trackerCreate(tracker_type):
+
+########## UTILS ##########
+###########################
+
+def getVideoCenterCoord(video):
+    """ Returns the center of the video in pixel units: (x, y)
+    """
     
-    print(cv2.__version__)
+    width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    center = (int(width / 2), int(height / 2))
+    
+    return center
+
+def getBoxCenterCoord3D(box, initWidth):
+    """ Returns the coordinate of the center of the box in 3-dimensions. 
+    The z-dimension is computed by comparing initial width with the width of the box. It is a positive
+    value if the box is closer than its original position and negative if it is further. 
+
+    Args:
+        box : Bounding box returned by tracker.update() method of opencv
+        initWidth (int): Width reference for the object
+
+    Returns:
+        tuple: (x, y, z) integer coordinates in pixel units
+    """
+    x = int(box[0] + box[2]/2)
+    y = int(box[1] + box[3]/2)
+    rel_z = round(box[2] / initWidth - 1, 3)
+    
+    return (x, y, rel_z)
+
+def getBoxCenterCoord2D(box):
+    """ Returns the coordinate of the center of the box in 2-dimensions.
+
+    Args:
+        box : Bounding box returned by tracker.update() method of opencv
+
+    Returns:
+        tuple: (x, y) integer coordinates in pixel units
+    """
+    x = int(box[0] + box[2]/2)
+    y = int(box[1] + box[3]/2)
+    
+    return (x, y)
+
+
+def createColorGrading(param):
+    """ Returns a color generated with one parameter. Used to compute a color from the z coordinate of an 
+    object to show the depth of the object.
+
+    Args:
+        param (float): z-coordinate of an object
+
+    Returns:
+        color
+    """
+    param = (param + 1) / 2
+    
+    start_color = (255, 0, 0)
+    end_color = (0, 0, 255)
+
+    color = np.array(start_color) * (1 - param) + np.array(end_color) * param
+    
+    return color
+
+
+def binFilter(img, thresh):
+    """ Returns a binary image computed with a threshold
+
+    Args:
+        img (image): originale image
+        thresh : threshold between 0 to 255
+
+    Returns:
+        image: binary image
+    """
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    ret, binImg = cv2.threshold(img, thresh, 255, cv2.THRESH_BINARY)
+
+    return binImg
+
+
+def getShapeCenter(binImg):
+    """ Compute center of a shape of an object from binary image.
+    """
+    M = cv2.moments(binImg)
+
+    x = int(M["m10"] / M["m00"])
+    y = int(M["m01"] / M["m00"])
+
+    return (x, y)
+
+def blurBG(frame):
+    """ Returns image with blurred background
+    """
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    mask = cv2.inRange(hsv, (0, 75, 40), (180, 255, 255))
+    mask_3d = np.repeat(mask[:, :, np.newaxis], 3, axis=2)
+    blurred_frame = cv2.GaussianBlur(frame, (25, 25), 0)
+    frame = np.where(mask_3d == (255, 255, 255), frame, blurred_frame)
+    
+    return frame
+
+###### OPENCV TRACKER #####
+###########################
+
+def trackerCreate(tracker_type):
+    """ Initialize a tracker from the OpenCV library. Tracker can be one of the following :
+        'BOOSTING', 'MIL','KCF', 'TLD', 'MEDIANFLOW', 'CSRT', 'MOSSE'.
+        Check https://docs.opencv.org/3.4/d9/df8/group__tracking.html for more information.
+
+    Args:
+        tracker_type (String): tracker name 
+
+    Returns:
+        opencv tracker: tracker
+    """
     
     (major_ver, minor_ver, subminor_ver) = (cv2.__version__).split('.')
     
@@ -39,74 +163,14 @@ def trackerCreate(tracker_type):
         elif tracker_type == 'MOSSE':
             tracker = cv2.TrackerMOSSE_create()
         else:
-            tracker = cv2.TrackerMOSSE_create()
-            print("Tracker type must be one of the following : 'BOOSTING', 'MIL','KCF', 'TLD', 'MEDIANFLOW', 'CSRT', 'MOSSE', set to MOSSE tracker")
+            tracker = cv2.TrackerMedianFlow_create()
+            print("Tracker type must be one of the following : 'BOOSTING', 'MIL','KCF', 'TLD', 'MEDIANFLOW', 'CSRT', 'MOSSE', set to MEDIANFLOW tracker")
 
     return tracker
 
-def getVideoCenterCoord(video):
-    
-    width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
-    height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    center = (int(width / 2), int(height / 2))
-    
-    return center
 
-def getBoxCenterCoord3D(box, initWidth):
-    
-    x = int(box[0] + box[2]/2)
-    y = int(box[1] + box[3]/2)
-    rel_z = round(box[2] / initWidth - 1, 3)
-    
-    return (x, y, rel_z)
-
-def getBoxCenterCoord2D(box):
-    
-    x = int(box[0] + box[2]/2)
-    y = int(box[1] + box[3]/2)
-    
-    return (x, y)
-
-
-def createColorGrading(param):
-    
-    param = (param + 1) / 2
-    
-    start_color = (255, 0, 0)
-    end_color = (0, 0, 255)
-
-    color = np.array(start_color) * (1 - param) + np.array(end_color) * param
-    
-    return color
-
-
-def binFilter(img, thresh):
-
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    ret, binImg = cv2.threshold(img, thresh, 255, cv2.THRESH_BINARY)
-
-    return binImg
-
-
-def getShapeCenter(binImg):
-    # Calculer les moments de l'objet
-    M = cv2.moments(binImg)
-
-    x = int(M["m10"] / M["m00"])
-    y = int(M["m01"] / M["m00"])
-
-    return (x, y)
-
-def blurBG(frame):
-    
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    mask = cv2.inRange(hsv, (0, 75, 40), (180, 255, 255))
-    mask_3d = np.repeat(mask[:, :, np.newaxis], 3, axis=2)
-    blurred_frame = cv2.GaussianBlur(frame, (25, 25), 0)
-    frame = np.where(mask_3d == (255, 255, 255), frame, blurred_frame)
-    
-    return frame
-
+########## YOLO ###########
+###########################
 
 def detectWithYOLO(net, image, confThresh):
     
@@ -154,10 +218,12 @@ def detectWithYOLO(net, image, confThresh):
     return classIDs, confidences, boxes
 
 
-##### Keypoints #####
-#####################
+######## KEYPOINTS ########
+###########################
 
 def getCentroidFromKeypoints(keypoints):
+    """ Returns mass center of keypoints cloud
+    """
     num_keypoints = len(keypoints)
     
     if num_keypoints != 0:
@@ -175,18 +241,14 @@ def getCentroidFromKeypoints(keypoints):
     return (0, 0)
 
 def getKeypoints(img_ref, img_test, descriptor, thresh):
-    
+    """ Returns keypoints that match with the keypoints of the reference image 
+    """
     # find the keypoints and descriptors
     kp_ref, des_ref = descriptor.detectAndCompute(img_ref, None)
     kp_test, des_test = descriptor.detectAndCompute(img_test, None)
 
-    print(f"kp_test len : {str(len(kp_test))}")
-    print(f"kp_ref len : {str(len(kp_ref))}")
-
     bf = cv2.BFMatcher()
     matches = bf.knnMatch(des_ref, des_test, k=2)
-    
-    print(f"matches len : {str(len(matches))}")
 
     # Keep only good matches
     good = []
@@ -194,7 +256,7 @@ def getKeypoints(img_ref, img_test, descriptor, thresh):
         if m.distance < thresh * n.distance:
             good.append(m)
 
-    print(f"good matches len : {str(len(good))}")
+    print(f"Good matches len : {str(len(good))}")
 
     good_kp_ref = [kp_ref[m.queryIdx] for m in good]
     good_kp_test = [kp_test[m.queryIdx] for m in good]
@@ -205,10 +267,36 @@ def getKeypoints(img_ref, img_test, descriptor, thresh):
 ##### Mobilenet #####
 #####################
 
-def getClassNames(fileAdress):
-    """ Return list with class names from the file specified by fileAdress
+def initDetectionModel(weightsPath=None, configPath=None):
+    """ Initialize a detection model used to detect object. If no weightsPath or configPath is given,
+    default path will be used.
     
     """
+    if weightsPath is None:
+        weightsPath =  os.path.join(package_dir, 'data/ssd_mobilenet_v3_files', 
+                                    'frozen_inference_graph.pb')
+    
+    if configPath is None:
+        configPath =  os.path.join(package_dir, 'data/ssd_mobilenet_v3_files', 
+                                   'ssd_mobilenet_v3_large_coco_2020_01_14.pbtxt')
+        
+    net = cv2.dnn_DetectionModel(weightsPath, configPath)
+    net.setInputSize(320,320)
+    net.setInputScale(1.0/ 127.5)
+    net.setInputMean((127.5, 127.5, 127.5))
+    net.setInputSwapRB(True)
+    
+    return net
+
+def getClassNames(fileAdress=None):
+    """ Return list with class names from the file specified by fileAdress.
+    Default names files will be used if none is given.
+    
+    """
+    if fileAdress is None:
+        fileAdress =  os.path.join(package_dir, 'data/ssd_mobilenet_v3_files', 
+                                   'coco.names')
+    
     classNames= []
     with open(fileAdress, "r") as f:
         classNames = [ligne.strip() for ligne in f]
@@ -219,8 +307,11 @@ def getClassNameFromId(classNames, id):
     return classNames[int(id)-1]
 
 def getDetectionsList(classIds, confs, bbox, classNames, filteredClass = None):
-    """Provide lists of (box, conf, id). filteredList is for object class belonging in filteredClass, 
-        othersList is for all the other objects. If filteredClass is not given, it returns both lists with all objects inside
+    """ Provide lists of (box, conf, id). filteredList is a list with objects belonging in filteredClass, 
+        othersList is a list with all the other objects. If filteredClass is not given, it returns both lists 
+        with all objects inside.
+        This method gets objects that will be processed by a tracker from objects that has been detected by a 
+        neural network trained for detection.
     """
     filteredList = []
     othersList = []
@@ -235,8 +326,9 @@ def getDetectionsList(classIds, confs, bbox, classNames, filteredClass = None):
     return filteredList, othersList
 
 
-##### MEDIAPIPE #####
-#####################
+######## MEDIAPIPE ########
+###########################
+
 def getPoseCoord(results, num_pose, w_image, h_image):
     """Returns a list containing the position of the pose in the image.
 
