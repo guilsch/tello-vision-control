@@ -130,7 +130,7 @@ def trackFace(drone, PID_X, PID_Z, PID_YAW, err, debug = False):
     return [0, com_X, com_Z, com_YAW]
 
     
-def getError(success, faceCoord, vidCenter, faceWidthReference = 50):
+def getError(success, faceCoord, vidCenter, err_X_ref=50, area_mode=True):
     """
         Returns the error on the position of the drone (IN THE DRONE FRAME)
         relatively to the object if it has been detected or not.
@@ -140,15 +140,22 @@ def getError(success, faceCoord, vidCenter, faceWidthReference = 50):
         success (_bool_): _description_
         faceCoord (_list_): [x, y, z] corresponding to the position of the object in the image frame
         vidCenter (_list_): [x, y] coordinates of the center of the video in the image frame (constant)
+        err_X_ref (float): Reference to compute the x error which will be compared to z coordinate of the face. 
+                           Must be the same dimension as faceCoord[2] (e.g. area or distance in meters)
+        area_mode (_bool_): true if the reference and faceCoord[2] are areas, false if distances
 
     Returns:
         _list_: [X, Y, YAW] error in the drone frame
     """
-    print("success : " + str(success))
-    print("faceCoord : " + str(faceCoord))
+    # print("success : " + str(success))
+    # print("faceCoord : " + str(faceCoord))
     
     if success:
-        err_X = faceWidthReference - faceCoord[2]
+        if area_mode:
+            err_X = err_X_ref - faceCoord[2]
+        else:
+            err_X = faceCoord[2] - err_X_ref
+            
         err_Z = vidCenter[1] - faceCoord[1]
         err_YAW = faceCoord[0] - vidCenter[0]
         return [err_X, err_Z, err_YAW]

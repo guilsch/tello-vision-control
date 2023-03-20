@@ -9,6 +9,7 @@ import itertools
 import csv
 import os
 import tello_vision_control
+import math
 
 
 ######## PARAMETERS #######
@@ -329,48 +330,61 @@ def getDetectionsList(classIds, confs, bbox, classNames, filteredClass = None):
 ######## MEDIAPIPE ########
 ###########################
 
-def getPoseCoord(results, num_pose, w_image, h_image):
+def getLandmarkCoord(pose, num_landmark, w_image, h_image, head_size_ref = 20, hor_cam_ang = 82.6):
     """Returns a list containing the position of the pose in the image.
 
     Args:
-        results (_type_): the object given by the pose.process() method, the result of the pose detection
+        pose (_type_): the object given by the pose.process() method, the result of the pose detection
         num_pose (_type_): the number 0-32 corresponding to a particular part of the pose landmark
         w_image (_type_): width of the image reference for the coordinates
         h_image (_type_): height of the image reference for the coordinates
+        head_size_ref (_type): Head size reference between the ears in centimeters
 
     Returns:
-        _type_: list [x, y, z, visibility] with x, y the coordinate of the particular pose in the image coordinates
+        _type_: list [x, y, z, visibility] with x, y the coordinate of the particular landmark in the image coordinates
     """
-    num_pose_count = 0
-    coord = [None, None, None, None]
-    landmarks = results.pose_landmarks.landmark
+    coord = [None, None, None]
+    success = False
     
-    if landmarks:
-        for data_point in landmarks:
-            
-            if num_pose_count == num_pose:
-                x, y = convertNormCoordToImageCoord(data_point.x, data_point.y, w_image, h_image)
-                coord = [x, y, data_point.z, data_point.visibility]
-                return coord
-            
-            num_pose_count += 1
+    # horiz_cam_angle = abs(2 * math.atan(math.tan(diag_cam_ang / 2) * (w_image / h_image)))
+    
+    if pose.pose_landmarks:
+        landmarks = pose.pose_landmarks.landmark
         
-    return coord
+        for (num_landmark_count, data_point) in enumerate(landmarks):
+            
+            if num_landmark_count == 7:
+                left_ear_coord = [data_point.x*w_image, data_point.y*h_image]  
+            elif num_landmark_count == 8:
+                right_ear_coord = [data_point.x*w_image, data_point.y*h_image]
+            
+            if num_landmark_count == num_landmark:
+                coord[0] = int(data_point.x*w_image)
+                coord[1] = int(data_point.y*h_image)
+    
+        if left_ear_coord[0] is not None and right_ear_coord[0] is not None:
+            head_size_pixel = math.hypot(left_ear_coord[0] - right_ear_coord[0], left_ear_coord[1] - right_ear_coord[1])
+            depth = round((head_size_ref * w_image / 2) / (head_size_pixel * math.tan(hor_cam_ang)), 3)
+            coord[2] = depth
+            
+        success = True
+      
+    return success, coord
 
 
-def convertNormCoordToImageCoord(x, y, w_image, h_image):
-    """Convert coordinates x and y from 0.0-1.0 reference to image-size reference (e.g. 0-720)
+# def convertNormCoordToImageCoord(x, y, w_image, h_image):
+#     """Convert coordinates x and y from 0.0-1.0 reference to image-size reference (e.g. 0-720)
 
-    Args:
-        x (_type_): 0.0 to 1.0 x coordinate
-        y (_type_): 0.0 to 1.0 y coordinate
-        w_image (_type_): image size reference
-        h_image (_type_): image size reference
+#     Args:
+#         x (_type_): 0.0 to 1.0 x coordinate
+#         y (_type_): 0.0 to 1.0 y coordinate
+#         w_image (_type_): image size reference
+#         h_image (_type_): image size reference
 
-    Returns:
-        _type_: x, y in the image size reference
-    """
-    return int(x*w_image), int(y*h_image)
+#     Returns:
+#         _type_: x, y in the image size reference
+#     """
+#     return int(x*w_image), int(y*h_image)
 
 
 def get_labels_list(adress=None):
