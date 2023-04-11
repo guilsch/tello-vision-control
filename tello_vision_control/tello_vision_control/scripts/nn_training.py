@@ -6,10 +6,10 @@ import tensorflow as tf
 from sklearn.model_selection import train_test_split
 from tello_vision_control.utils import classification_utils
 
-dataset = 'model2/keypoint2.csv'
-model_save_path = 'model2/keypoint_classifier2.hdf5'
-tflite_save_path = 'model2/keypoint_classifier2.tflite'
-NUM_CLASSES = 3
+dataset = 'C:/Users/guilh/OneDrive/Documents/Travail/ETS/Projet/Programme/Codes/keypoint.csv'
+model_save_path = 'C:/Users/guilh/OneDrive/Documents/Travail/ETS/Projet/Programme/Codes/model/keypoint_classifier2.hdf5'
+tflite_save_path = 'C:/Users/guilh/OneDrive/Documents/Travail/ETS/Projet/Programme/Codes/model/keypoint_classifier2.tflite'
+NUM_CLASSES = 5
 
 ### Prepare data
 X_dataset = np.loadtxt(dataset, delimiter=',', dtype='float32', usecols=list(range(1, (21 * 2) + 1)))

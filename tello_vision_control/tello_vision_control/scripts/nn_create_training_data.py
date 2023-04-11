@@ -19,9 +19,12 @@ import mediapipe as mp
 from tello_vision_control import classification_utils
 from tello_vision_control import tools
 
+########## SETUP ##########
+###########################
+
 ##### Parameters
-classifier_labels_file = None
-keypoints_output_csv = 'keypoint.csv'
+classifier_labels_file = 'C:/Users/guilh/OneDrive/Documents/Travail/ETS/Projet/Programme/Codes/labels.csv'
+keypoints_output_csv = 'C:/Users/guilh/OneDrive/Documents/Travail/ETS/Projet/Programme/Codes/keypoint.csv'
 video_adress = None
 
 ##### Initialization
@@ -45,7 +48,8 @@ hands = mp_hands.Hands(model_complexity=0, min_detection_confidence=0.6, min_tra
 # Hand poses classification
 hand_states_labels = tools.get_labels_list(classifier_labels_file)
 
-##### Real-time tracking
+########## LOOP ###########
+###########################
 pause = False
 while True:
     

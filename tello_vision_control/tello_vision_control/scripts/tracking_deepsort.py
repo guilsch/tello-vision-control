@@ -74,7 +74,7 @@ while True:
                 if track_conf != None:
                     track_conf = round(track.get_det_conf(), 3)
                       
-                # Draw tracked objects          
+                # Draw tracked objects in green         
                 cv2.rectangle(frame, track_box, color=(0,255,0), thickness=2)
                 cv2.putText(frame, tools.getClassNameFromId(classNames, track_object_id) + ", " + str(track_conf), (track_box[0]+10, track_box[1]+30),
                         cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0), 1)
@@ -91,7 +91,7 @@ while True:
             detection_conf = detection[1]
             detection_class = detection[2]
             
-            # Draw other objects
+            # Draw other objects in red
             cv2.rectangle(frame, detection_box, color=(0,0,255), thickness=2)
             cv2.putText(frame, tools.getClassNameFromId(classNames, detection_class) + ", " + str(detection_conf), 
                         (detection_box[0]+10, detection_box[1]+30), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 255), 1)

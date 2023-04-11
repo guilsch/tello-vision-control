@@ -365,7 +365,7 @@ def getLandmarkCoord(pose, num_landmark, w_image, h_image, head_size_ref = 20, h
         if left_ear_coord[0] is not None and right_ear_coord[0] is not None:
             head_size_pixel = math.hypot(left_ear_coord[0] - right_ear_coord[0], left_ear_coord[1] - right_ear_coord[1])
             depth = round((head_size_ref * w_image / 2) / (head_size_pixel * math.tan(hor_cam_ang)), 3)
-            coord[2] = depth
+            coord[2] = min(depth, 300)
             
         success = True
       

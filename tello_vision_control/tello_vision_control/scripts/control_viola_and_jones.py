@@ -1,8 +1,7 @@
 from tello_vision_control.utils import tello_tools
 import keyboard
-from djitellopy import tello
 import cv2
-import matplotlib.pyplot as plt
+
 
 #### Parameters
 w = 360
@@ -19,6 +18,11 @@ PID_YAW = tello_tools.PID(0.5, 0, 0.5)
 PID_X = tello_tools.PID(3, 0, 3)
 PID_Z = tello_tools.PID(0.5, 0, 0.5)
 
+PID_YAW_Manager = tello_tools.PIDManager(PID_YAW)
+PID_X_Manager = tello_tools.PIDManager(PID_X)
+PID_Z_Manager = tello_tools.PIDManager(PID_Z)
+
+
 if not debug:
     print('Drone taking off')
     drone.takeoff()
@@ -34,9 +38,9 @@ t = 0
 #### Real-time
 while True:
     
-    if keyboard.is_pressed('l'):
+    if keyboard.is_pressed('l') and not debug:
         print('Drone landing')
-        # tello.land(drone)
+        drone.land(drone)
         print('Landing done')
         break
     
@@ -44,13 +48,7 @@ while True:
     success, frame, faceCoord = tello_tools.findFace(frame)
     err = tello_tools.getError(success, faceCoord, vidCenter)
     
-    # print(f"faceCoord[0] = {str(faceCoord[0])}")
-    # print(f"vidCenter[0] = {str(vidCenter[0])}")
-    # print(f"err = {str(err)}")
-    
-    com_rc = tello_tools.trackFace(drone, PID_X, PID_Z, PID_YAW, err, debug=debug)
-    
-    # print(f"u_yaw = {str(com_rc)}")
+    com_rc = tello_tools.controlDrone(drone, PID_X, PID_Z, PID_YAW, err, debug=debug)
     
     U.append(com_rc)
     Err.append(err)
@@ -60,8 +58,7 @@ while True:
     
     cv2.imshow("Tello camera", frame)
     cv2.waitKey(1)
-
-# plt.plot(T, U, label = "Input")
-# plt.plot(T, Err, label = "Error")
-# plt.legend()
-# plt.show()
+    
+    PID_YAW_Manager.update()
+    PID_X_Manager.update()
+    PID_Z_Manager.update()

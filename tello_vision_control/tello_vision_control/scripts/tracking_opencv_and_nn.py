@@ -1,5 +1,4 @@
 import cv2
-import numpy as np
 from tello_vision_control import tools
 
 ########## SETUP ##########
