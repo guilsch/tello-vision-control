@@ -1,9 +1,7 @@
 from djitellopy import Tello
 import cv2
-from tello_vision_control.utils import tools
 import time
 import numpy as np
-import math
 import tkinter as tk
 
 def initTello():
@@ -25,43 +23,7 @@ def getTelloFrame(tello, w = 360, h = 240):
     frame = frame.frame
     frame = cv2.resize(frame, (w, h))
     
-    return frame
-
-def findFace(img):
-    """
-    Return the image with a rectangle where a face has been detected, 
-    as well as the (x, y) coordinates and the area of the face
-    """
-    
-    classifier = cv2.CascadeClassifier("haar_cascades/haarcascade_frontalface_default.xml")
-    imgGray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    faces = classifier.detectMultiScale(imgGray, 1.2, 4)
-    
-    facesAreaList = []
-    facesCoordList = []
-    
-    # Create a list with all the faces detected
-    for (x, y, w, h) in faces:
-        cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 255), 2)
-        
-        faceCoord = tools.getBoxCenterCoord2D((x, y, w, h))
-        faceArea = w * h
-        facesAreaList.append(faceArea)
-        facesCoordList.append(faceCoord)
-    
-    # Keep only the face with the largest area and calculate the z-coordinate 
-    if facesCoordList:
-        i_max = facesAreaList.index(max(facesAreaList))
-        
-        mainFaceArea = facesAreaList[i_max]
-        mainFaceCoord_xy = facesCoordList[i_max]
-        z_coord = math.sqrt(mainFaceArea)
-        mainFaceCoord_xyz = mainFaceCoord_xy + [z_coord]
-        
-        return True, img, mainFaceCoord_xyz
-    else:
-        return False, img, [0, 0, 0]
-    
+    return frame 
 
 
 class PID:

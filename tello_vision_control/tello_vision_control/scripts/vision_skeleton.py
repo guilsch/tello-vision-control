@@ -4,8 +4,7 @@
 
 import cv2
 import mediapipe as mp
-from tello_vision_control import tools
-from tello_vision_control import tello_tools
+from tello_vision_control import vision_tools
 
 
 ########## SETUP ##########
@@ -47,7 +46,7 @@ while True:
     detection = pose_detector.process(frame_RGB)
 
     # Get coordinates
-    success, landmark_coord3D = tools.getLandmarkCoord(detection, landmark_num, w_image, h_image)
+    success, landmark_coord3D = vision_tools.getLandmarkCoord(detection, landmark_num, w_image, h_image)
     
     # draw detected skeleton on the frame
     mp_drawing.draw_landmarks(frame, detection.pose_landmarks, mp_pose.POSE_CONNECTIONS)

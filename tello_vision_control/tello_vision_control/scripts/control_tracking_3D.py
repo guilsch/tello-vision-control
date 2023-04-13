@@ -4,8 +4,8 @@
 
 import cv2
 import mediapipe as mp
-from tello_vision_control import tools
-from tello_vision_control import tello_tools
+from tello_vision_control import vision_tools
+from tello_vision_control import drone_tools
 
 ########## SETUP ##########
 ###########################
@@ -21,13 +21,13 @@ mp_pose = mp.solutions.pose
 pose_detector = mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5)
 
 # PID relative to Yaw, X, Z, in the drone frame
-PID_YAW = tello_tools.PID(0.5, 0, 0.5)
-PID_X = tello_tools.PID(0.5, 0, 0.5)
-PID_Z = tello_tools.PID(0.5, 0, 0.5)
+PID_YAW = drone_tools.PID(0.5, 0, 0.5)
+PID_X = drone_tools.PID(0.5, 0, 0.5)
+PID_Z = drone_tools.PID(0.5, 0, 0.5)
 
-PID_YAW_Manager = tello_tools.PIDManager(PID_YAW)
-PID_X_Manager = tello_tools.PIDManager(PID_X)
-PID_Z_Manager = tello_tools.PIDManager(PID_Z)
+PID_YAW_Manager = drone_tools.PIDManager(PID_YAW)
+PID_X_Manager = drone_tools.PIDManager(PID_X)
+PID_Z_Manager = drone_tools.PIDManager(PID_Z)
 
 ##### Param
 # Select the landmark you want to track. Check the documentation :
@@ -41,7 +41,7 @@ debug = False   # Mode
 ###########################
 
 #### Tello initialization
-drone = tello_tools.initTello()
+drone = drone_tools.initTello()
 
 if not debug:
     print('Drone taking off')
@@ -59,18 +59,18 @@ while run:
         run = False
     
     # Read frame
-    frame = tello_tools.getTelloFrame(drone, w_image, h_image)
+    frame = drone_tools.getTelloFrame(drone, w_image, h_image)
 
     # Detect poses
     frame_RGB = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     detection = pose_detector.process(frame_RGB)
 
     # Get coordinates
-    success, landmark_coord3D = tools.getLandmarkCoord(detection, landmark_num, w_image, h_image)
+    success, landmark_coord3D = vision_tools.getLandmarkCoord(detection, landmark_num, w_image, h_image)
     
     # Track
-    err = tello_tools.getError(success, landmark_coord3D, vidCenter, err_X_ref=dist, area_mode=False, mode_3D=True)
-    com_rc = tello_tools.controlDrone(drone, err, PID_Z, PID_YAW, PID_X=PID_X, debug=debug)
+    err = drone_tools.getError(success, landmark_coord3D, vidCenter, err_X_ref=dist, area_mode=False, mode_3D=True)
+    com_rc = drone_tools.controlDrone(drone, err, PID_Z, PID_YAW, PID_X=PID_X, debug=debug)
     
     print("com_rc = " + str(com_rc) + "     ; distance = " + str(landmark_coord3D[2]))
     

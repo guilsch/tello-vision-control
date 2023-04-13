@@ -1,5 +1,5 @@
 import cv2
-from tello_vision_control.utils import tools
+from tello_vision_control.utils import vision_tools
 
 ##### Init video
 # video = cv2.VideoCapture("videos/xy_slow.mp4")
@@ -22,10 +22,10 @@ img_ref = cv2.imread("images/apple_ref.png")
 img_test = cv2.imread("images/apple.png")
 
 # Get matched keypoints
-kp_test, kp_ref, matches = tools.getKeypoints(img_ref, img_test, descriptor, thresh)
+kp_test, kp_ref, matches = vision_tools.getKeypoints(img_ref, img_test, descriptor, thresh)
 
 # Calculate centroid
-centroid = tools.getCentroidFromKeypoints(kp_test)
+centroid = vision_tools.getCentroidFromKeypoints(kp_test)
 
 # Draw matches
 img_matches = cv2.drawMatches(img_ref,kp_ref,img_test,kp_test, matches,None)

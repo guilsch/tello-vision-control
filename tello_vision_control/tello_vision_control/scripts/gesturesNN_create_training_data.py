@@ -16,8 +16,8 @@ video.
 
 import cv2
 import mediapipe as mp
-from tello_vision_control import classification_utils
-from tello_vision_control import tools
+from tello_vision_control import classification_tools
+from tello_vision_control import vision_tools
 
 ########## SETUP ##########
 ###########################
@@ -46,7 +46,7 @@ mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(model_complexity=0, min_detection_confidence=0.6, min_tracking_confidence=0.5)
 
 # Hand poses classification
-hand_states_labels = tools.get_labels_list(classifier_labels_file)
+hand_states_labels = vision_tools.get_labels_list(classifier_labels_file)
 
 ########## LOOP ###########
 ###########################
@@ -73,18 +73,18 @@ while True:
         for hand_landmarks in results.multi_hand_landmarks:
             
             ### Hand pose pre-processing
-            hand_bbox = tools.get_landmarks_box(hand_landmarks, w_image, h_image)
-            landmark_coord_list = tools.get_landmark_coord_list(hand_landmarks, w_image, h_image)
-            pre_processed_landmark_list = tools.pre_process_landmark(landmark_coord_list)
+            hand_bbox = vision_tools.get_landmarks_box(hand_landmarks, w_image, h_image)
+            landmark_coord_list = vision_tools.get_landmark_coord_list(hand_landmarks, w_image, h_image)
+            pre_processed_landmark_list = vision_tools.pre_process_landmark(landmark_coord_list)
     
             # Read number pressed by user
-            label_id = classification_utils.get_label_id_from_keyboard(key)
+            label_id = classification_tools.get_label_id_from_keyboard(key)
             
             # Add pose to database
             if label_id is not None and label_id < len(hand_states_labels):
                 pause = True
                 print(label_id)
-                classification_utils.write_new_data(label_id, pre_processed_landmark_list,
+                classification_tools.write_new_data(label_id, pre_processed_landmark_list,
                                                     csv_path=keypoints_output_csv)
                 hand_state = hand_states_labels[label_id]
                 

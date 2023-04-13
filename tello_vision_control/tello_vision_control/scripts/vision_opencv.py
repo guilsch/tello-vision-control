@@ -1,12 +1,12 @@
 import cv2
-from tello_vision_control import tools
+from tello_vision_control import vision_tools
 
 ########## SETUP ##########
 ###########################
 
 ##### Init tracker  
 trackerType = 'MEDIANFLOW'
-tracker = tools.trackerCreate(trackerType)
+tracker = vision_tools.trackerCreate(trackerType)
 
 
 ##### Init video
@@ -18,7 +18,7 @@ else:
     # Video read from camera of the device
     video = cv2.VideoCapture(0)
 
-vidCenter = tools.getVideoCenterCoord(video)
+vidCenter = vision_tools.getVideoCenterCoord(video)
 
 
 ######## PRE-LOOP #########
@@ -58,12 +58,12 @@ while True:
         p2 = (int(bbox[0] + bbox[2]), int(bbox[1] + bbox[3]))
         cv2.rectangle(frame, p1, p2, (255,0,0), 2, 1)
                 
-        bboxCoord = tools.getBoxCenterCoord3D(bbox, initWidth)
+        bboxCoord = vision_tools.getBoxCenterCoord3D(bbox, initWidth)
         cv2.putText(frame, f"Object coordinates : ({str(bboxCoord[0])}, {str(bboxCoord[1])}, {str(bboxCoord[2])})" ,
                     (100,80), cv2.QT_FONT_NORMAL, 0.75,(255,0,0),2)
         
         cv2.circle(frame, bboxCoord[:2], 2, (0, 0, 255), -1)
-        cv2.arrowedLine(frame, vidCenter, bboxCoord[:2], tools.createColorGrading(bboxCoord[2]), 2, tipLength=0.3)
+        cv2.arrowedLine(frame, vidCenter, bboxCoord[:2], vision_tools.createColorGrading(bboxCoord[2]), 2, tipLength=0.3)
     else :
         cv2.putText(frame, "Failed to track object", (100,80), cv2.QT_FONT_NORMAL, 0.75,(0,0,255),2)
 

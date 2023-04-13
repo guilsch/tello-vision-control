@@ -6,18 +6,18 @@ mobilenet network has been trained to detect.
 """
 
 import cv2
-from tello_vision_control import tools
+from tello_vision_control import vision_tools
 
 ########## SETUP ##########
 ###########################
 
 ##### Init detetction network (SSD Mobilenet)
 # Init network
-net = tools.initDetectionModel(weightsPath=None, configPath=None) # paths set to default
+net = vision_tools.initDetectionModel(weightsPath=None, configPath=None) # paths set to default
 detection_threshold = 0.6
 
 # Get objects labels
-classNames = tools.getClassNames(fileAdress=None) # path set to default
+classNames = vision_tools.getClassNames(fileAdress=None) # path set to default
 trackedClass = "person"
 
 
@@ -30,7 +30,7 @@ else:
     # Video read from camera of the device
     video = cv2.VideoCapture(0)
 
-vidCenter = tools.getVideoCenterCoord(video)
+vidCenter = vision_tools.getVideoCenterCoord(video)
 
 
 ########## LOOP ###########
@@ -56,7 +56,7 @@ while True:
                 if confidence >= maxConfidence:
                     # Save best detection
                     maxConfidence = confidence
-                    bestBoxCoord = tools.getBoxCenterCoord2D(box)
+                    bestBoxCoord = vision_tools.getBoxCenterCoord2D(box)
                     bestClassId, bestConfidence, bestBox = classId, confidence, box
      
             else:

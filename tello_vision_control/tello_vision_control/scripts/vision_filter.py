@@ -1,11 +1,11 @@
 import cv2
-from tello_vision_control import tools
+from tello_vision_control import vision_tools
 
 ##### Init video
 video = cv2.VideoCapture("videos/xyz_slow.mp4")
 # video = cv2.VideoCapture(0)
 
-vidCenter = tools.getVideoCenterCoord(video)
+vidCenter = vision_tools.getVideoCenterCoord(video)
 
 ##### Real-time tracking
 while True:
@@ -14,8 +14,8 @@ while True:
     if not success:
         break
         
-    binImg= tools.binFilter(frame, 200)
-    center = tools.getShapeCenter(binImg)
+    binImg= vision_tools.binFilter(frame, 200)
+    center = vision_tools.getShapeCenter(binImg)
     
     cv2.circle(frame, center, 20, (0, 0, 255), -1)
     cv2.arrowedLine(frame, vidCenter, center, (0, 255, 0), 2, tipLength=0.3)

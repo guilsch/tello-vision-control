@@ -129,6 +129,47 @@ def blurBG(frame):
     
     return frame
 
+# HAAR CASCADE CLASSIFIER #
+###########################
+def createHaarCascadeClassifier(classifierPath=None):
+    if classifierPath is None:
+        classifierPath =  os.path.join(package_dir, 'data/haarCascadeClassifier', 
+                                   'haarcascade_frontalface_default.xml')
+    
+    return cv2.CascadeClassifier(classifierPath)
+
+
+def showAndFilterFaces(img, faces):
+    """
+    Return the image with a rectangle where a face has been detected, 
+    as well as the (x, y) coordinates and the area of the face
+    """
+    
+    facesAreaList = []
+    facesCoordList = []
+    
+    # Create a list with all the faces detected
+    for (x, y, w, h) in faces:
+        cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 255), 2)
+        
+        faceCoord = getBoxCenterCoord2D((x, y, w, h))
+        faceArea = w * h
+        facesAreaList.append(faceArea)
+        facesCoordList.append(faceCoord)
+    
+    # Keep only the face with the largest area and calculate the z-coordinate 
+    if facesCoordList:
+        i_max = facesAreaList.index(max(facesAreaList))
+        
+        mainFaceArea = facesAreaList[i_max]
+        mainFaceCoord_xy = list(facesCoordList[i_max])
+        z_coord = math.sqrt(mainFaceArea)
+        mainFaceCoord_xyz = mainFaceCoord_xy + [z_coord]
+        
+        return True, img, mainFaceCoord_xyz
+    else:
+        return False, img, [0, 0, 0]
+
 ###### OPENCV TRACKER #####
 ###########################
 
@@ -397,7 +438,7 @@ def get_labels_list(adress=None):
         (list) : list with all labels
     """
     if adress is None:
-        adress = os.path.join(package_dir, 'data', 'keypoint_classifier_label.csv')
+        adress = os.path.join(package_dir, 'data/gesture_classifier', 'keypoint_classifier_label.csv')
     
     with open(adress,
               encoding='utf-8-sig') as f:

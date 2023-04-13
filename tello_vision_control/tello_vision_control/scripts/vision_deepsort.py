@@ -7,18 +7,18 @@ for wich the SSD mobilenet network has been trained to detect.
 
 import cv2
 from deep_sort_realtime.deepsort_tracker import DeepSort
-from tello_vision_control import tools
+from tello_vision_control import vision_tools
 
 ########## SETUP ##########
 ###########################
 
 ##### Init detetction network (SSD Mobilenet)
 # Init network
-net = tools.initDetectionModel(weightsPath=None, configPath=None) # paths set to default
+net = vision_tools.initDetectionModel(weightsPath=None, configPath=None) # paths set to default
 detection_threshold = 0.6
 
 # Get objects labels
-classNames = tools.getClassNames(fileAdress=None) # path set to default
+classNames = vision_tools.getClassNames(fileAdress=None) # path set to default
 trackedClass = ["person"]
 
 
@@ -50,7 +50,7 @@ while True:
         
     # Creating lists of objects to be tracked and other objects in lists of 
     # ([left,top,w,h], confidence, detection_class_id)
-    filteredDetections, otherDetections = tools.getDetectionsList(
+    filteredDetections, otherDetections = vision_tools.getDetectionsList(
         classIds, confs, bbox, classNames, filteredClass=trackedClass)
     
     print("filtered detections : " + str(filteredDetections))
@@ -76,7 +76,7 @@ while True:
                       
                 # Draw tracked objects in green         
                 cv2.rectangle(frame, track_box, color=(0,255,0), thickness=2)
-                cv2.putText(frame, tools.getClassNameFromId(classNames, track_object_id) + ", " + str(track_conf), (track_box[0]+10, track_box[1]+30),
+                cv2.putText(frame, vision_tools.getClassNameFromId(classNames, track_object_id) + ", " + str(track_conf), (track_box[0]+10, track_box[1]+30),
                         cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0), 1)
                 
             else:
@@ -93,7 +93,7 @@ while True:
             
             # Draw other objects in red
             cv2.rectangle(frame, detection_box, color=(0,0,255), thickness=2)
-            cv2.putText(frame, tools.getClassNameFromId(classNames, detection_class) + ", " + str(detection_conf), 
+            cv2.putText(frame, vision_tools.getClassNameFromId(classNames, detection_class) + ", " + str(detection_conf), 
                         (detection_box[0]+10, detection_box[1]+30), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 255), 1)
 
     # Show image

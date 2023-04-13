@@ -1,6 +1,6 @@
 from djitellopy import Tello
 import cv2
-from tello_vision_control.utils import tools
+from tello_vision_control import vision_tools
 import time
 import numpy as np
 import math
@@ -44,7 +44,7 @@ def findFace(img):
     for (x, y, w, h) in faces:
         cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 255), 2)
         
-        faceCoord = tools.getBoxCenterCoord2D((x, y, w, h))
+        faceCoord = vision_tools.getBoxCenterCoord2D((x, y, w, h))
         faceArea = w * h
         facesAreaList.append(faceArea)
         facesCoordList.append(faceCoord)

@@ -4,11 +4,11 @@
 import numpy as np
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
-from tello_vision_control.utils import classification_utils
+from tello_vision_control import classification_tools
 
-dataset = 'C:/Users/guilh/OneDrive/Documents/Travail/ETS/Projet/Programme/Codes/keypoint.csv'
-model_save_path = 'C:/Users/guilh/OneDrive/Documents/Travail/ETS/Projet/Programme/Codes/model/keypoint_classifier2.hdf5'
-tflite_save_path = 'C:/Users/guilh/OneDrive/Documents/Travail/ETS/Projet/Programme/Codes/model/keypoint_classifier2.tflite'
+dataset = 'keypoint.csv'
+model_save_path = '/model/keypoint_classifier.hdf5'
+tflite_save_path = '/model/keypoint_classifier.tflite'
 NUM_CLASSES = 5
 
 ### Prepare data
@@ -17,7 +17,7 @@ y_dataset = np.loadtxt(dataset, delimiter=',', dtype='int32', usecols=(0))
 X_train, X_test, y_train, y_test = train_test_split(X_dataset, y_dataset, train_size=0.75, random_state=42)
 
 ### Create classifier
-classifier = classification_utils.create_landmarks_classifier(NUM_CLASSES)
+classifier = classification_tools.create_landmarks_classifier(NUM_CLASSES)
 classifier.summary()
 
 
@@ -47,4 +47,4 @@ val_loss, val_acc = classifier.evaluate(X_test, y_test, batch_size=128)
 ### Save
 # classifier = tf.keras.models.load_model(model_save_path)
 classifier.save(model_save_path, include_optimizer=False)
-classification_utils.save_classifier_to_TFLite(classifier, tflite_save_path)
+classification_tools.save_classifier_to_TFLite(classifier, tflite_save_path)

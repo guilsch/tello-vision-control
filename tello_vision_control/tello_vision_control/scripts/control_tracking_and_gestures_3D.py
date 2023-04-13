@@ -4,9 +4,9 @@
 
 import cv2
 import mediapipe as mp
-from tello_vision_control import tools
-from tello_vision_control import tello_tools
-from tello_vision_control import classification_utils
+from tello_vision_control import vision_tools
+from tello_vision_control import drone_tools
+from tello_vision_control import classification_tools
 
 ########## SETUP ##########
 ###########################
@@ -30,17 +30,17 @@ hands = mp_hands.Hands(model_complexity=0, min_detection_confidence=0.7, min_tra
 # Hand poses classification
 tflite_save_path = None
 labels_path = None
-pose_classifier = classification_utils.KeyPointClassifierLoader(tflite_save_path)
-hand_states_labels = tools.get_labels_list(labels_path)
+pose_classifier = classification_tools.KeyPointClassifierLoader(tflite_save_path)
+hand_states_labels = vision_tools.get_labels_list(labels_path)
 
 # PID relative to Yaw, X, Z, in the drone frame
-PID_YAW = tello_tools.PID(0.5, 0, 0.5)
-PID_X = tello_tools.PID(0.5, 0, 0.5)
-PID_Z = tello_tools.PID(0.5, 0, 0.5)
+PID_YAW = drone_tools.PID(0.5, 0, 0.5)
+PID_X = drone_tools.PID(0.5, 0, 0.5)
+PID_Z = drone_tools.PID(0.5, 0, 0.5)
 
-PID_YAW_Manager = tello_tools.PIDManager(PID_YAW)
-PID_X_Manager = tello_tools.PIDManager(PID_X)
-PID_Z_Manager = tello_tools.PIDManager(PID_Z)
+PID_YAW_Manager = drone_tools.PIDManager(PID_YAW)
+PID_X_Manager = drone_tools.PIDManager(PID_X)
+PID_Z_Manager = drone_tools.PIDManager(PID_Z)
 
 ##### Param
 # Select the landmark you want to track. Check the documentation :
@@ -54,7 +54,7 @@ debug = False   # Mode
 ###########################
 
 #### Tello initialization
-drone = tello_tools.initTello()
+drone = drone_tools.initTello()
 
 if not debug:
     print('Drone taking off')
@@ -76,7 +76,7 @@ while run:
         drone.emergency()
     
     # Read frame
-    frame = tello_tools.getTelloFrame(drone, w_image, h_image)
+    frame = drone_tools.getTelloFrame(drone, w_image, h_image)
 
     # Detect body and hand poses
     frame_RGB = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -85,11 +85,11 @@ while run:
 
     ##### Tracking
     # Get body part coordinates
-    success, landmark_coord3D = tools.getLandmarkCoord(body_detection, landmark_num, w_image, h_image)
+    success, landmark_coord3D = vision_tools.getLandmarkCoord(body_detection, landmark_num, w_image, h_image)
     
     # Track    
-    err = tello_tools.getError(success, landmark_coord3D, vidCenter, err_X_ref=dist, area_mode=False, mode_3D=True)
-    com_rc = tello_tools.controlDrone(drone, err, PID_Z, PID_YAW, PID_X=PID_X, debug=debug)
+    err = drone_tools.getError(success, landmark_coord3D, vidCenter, err_X_ref=dist, area_mode=False, mode_3D=True)
+    com_rc = drone_tools.controlDrone(drone, err, PID_Z, PID_YAW, PID_X=PID_X, debug=debug)
         
     # draw detected skeleton on the frame
     mp_drawing.draw_landmarks(frame, body_detection.pose_landmarks, mp_pose.POSE_CONNECTIONS)
@@ -111,9 +111,9 @@ while run:
         for hand_landmarks in hand_detection.multi_hand_landmarks:
             
             ### Hand pose classification 
-            hand_bbox = tools.get_landmarks_box(hand_landmarks, w_image, h_image)
-            landmark_coord_list = tools.get_landmark_coord_list(hand_landmarks, w_image, h_image)
-            pre_processed_landmark_list = tools.pre_process_landmark(landmark_coord_list)
+            hand_bbox = vision_tools.get_landmarks_box(hand_landmarks, w_image, h_image)
+            landmark_coord_list = vision_tools.get_landmark_coord_list(hand_landmarks, w_image, h_image)
+            pre_processed_landmark_list = vision_tools.pre_process_landmark(landmark_coord_list)
     
             hand_state_id = pose_classifier(pre_processed_landmark_list)
             hand_state = hand_states_labels[hand_state_id]

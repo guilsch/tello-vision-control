@@ -1,7 +1,12 @@
-from tello_vision_control.utils import tello_tools
-import keyboard
+from tello_vision_control import drone_tools
+from tello_vision_control import vision_tools
 import cv2
 
+########## SETUP ##########
+###########################
+
+#### Cascade Classifier
+classifier = vision_tools.createHaarCascadeClassifier()
 
 #### Parameters
 w = 360
@@ -11,16 +16,12 @@ debug = False
 
 
 #### Initialization
-drone = tello_tools.initTello()
+drone = drone_tools.initTello()
 
 # PID relative to Yaw, y, z, in the drone frame
-PID_YAW = tello_tools.PID(0.5, 0, 0.5)
-PID_X = tello_tools.PID(3, 0, 3)
-PID_Z = tello_tools.PID(0.5, 0, 0.5)
-
-PID_YAW_Manager = tello_tools.PIDManager(PID_YAW)
-PID_X_Manager = tello_tools.PIDManager(PID_X)
-PID_Z_Manager = tello_tools.PIDManager(PID_Z)
+PID_YAW = drone_tools.PID(0.5, 0, 0)
+PID_X = drone_tools.PID(3, 0, 0)
+PID_Z = drone_tools.PID(0.5, 0, 0)
 
 
 if not debug:
@@ -29,36 +30,31 @@ if not debug:
     print('Takeoff done')
 
 
-#### Debug
-U = []
-Err = []
-T = []
-t = 0
-
-#### Real-time
-while True:
+########## LOOP ###########
+###########################
+run = True
+while run:
     
-    if keyboard.is_pressed('l') and not debug:
-        print('Drone landing')
-        drone.land(drone)
-        print('Landing done')
-        break
+    # Exit if ENTER pressed
+    k = cv2.waitKey(1) & 0xff
+    if k == 13 :
+        run = False
     
-    frame = tello_tools.getTelloFrame(drone, w, h)
-    success, frame, faceCoord = tello_tools.findFace(frame)
-    err = tello_tools.getError(success, faceCoord, vidCenter)
+    frame = drone_tools.getTelloFrame(drone, w, h)
     
-    com_rc = tello_tools.controlDrone(drone, PID_X, PID_Z, PID_YAW, err, debug=debug)
+    imgGray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    faces = classifier.detectMultiScale(imgGray, 1.2, 4)
+    success, frame, faceCoord = vision_tools.showAndFilterFaces(frame, faces)
     
-    U.append(com_rc)
-    Err.append(err)
-    T.append(t)
+    err = drone_tools.getError(success, faceCoord, vidCenter)
     
-    t += 1
+    drone_tools.controlDrone(drone, err, PID_Z, PID_YAW, PID_X=PID_X, debug=debug)
     
     cv2.imshow("Tello camera", frame)
     cv2.waitKey(1)
     
-    PID_YAW_Manager.update()
-    PID_X_Manager.update()
-    PID_Z_Manager.update()
+   
+if not debug:
+    print('Drone landing')
+    drone.land()
+    print('Landing done')

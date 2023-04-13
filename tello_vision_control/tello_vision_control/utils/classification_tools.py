@@ -76,7 +76,7 @@ class KeyPointClassifierLoader(object):
         num_threads=1,
     ):
         if model_path is None:
-            model_path = os.path.join(package_dir, 'data', 'keypoint_classifier.tflite')
+            model_path = os.path.join(package_dir, 'data/gesture_classifier', 'keypoint_classifier.tflite')
         self.interpreter = tf.lite.Interpreter(model_path=model_path, num_threads=num_threads)
         self.interpreter.allocate_tensors()
         self.input_details = self.interpreter.get_input_details()
