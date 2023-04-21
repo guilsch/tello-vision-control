@@ -6,9 +6,9 @@ This Python library provides tools to tracks objects or persons in a video. It a
 
 Download and run :
 
-"""
+```
 pip install .\tello_vision_control\
-"""
+```
 
 ### Requirements
 
