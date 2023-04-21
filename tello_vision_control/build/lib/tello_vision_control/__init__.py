@@ -1,4 +1,3 @@
-# import utils.tools as tools
-# import utils.tello_tools as tello_tools
-# import utils.classification_utils as classification_utils
-# import utils.tello_tools as tello_tools
+import tello_vision_control.utils.vision_tools as vision_tools
+import tello_vision_control.utils.classification_tools as classification_tools
+import tello_vision_control.utils.drone_tools as drone_tools

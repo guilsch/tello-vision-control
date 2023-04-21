@@ -6,6 +6,6 @@ tello_vision_control.egg-info/dependency_links.txt
 tello_vision_control.egg-info/requires.txt
 tello_vision_control.egg-info/top_level.txt
 tello_vision_control/utils/__init__.py
-tello_vision_control/utils/classification_utils.py
-tello_vision_control/utils/tello_tools.py
-tello_vision_control/utils/tools.py
+tello_vision_control/utils/classification_tools.py
+tello_vision_control/utils/drone_tools.py
+tello_vision_control/utils/vision_tools.py

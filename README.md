@@ -2,6 +2,14 @@
 
 This Python library provides tools to tracks objects or persons in a video. It also gives tools to control a Tello drone with the camera. Scripts can be used to make the drone follow objects or react to particular hand gestures.
 
+### Installation
+
+Download and run :
+
+"""
+pip install .\tello_vision_control\
+"""
+
 ### Requirements
 
 - tensorflow                   2.9.0
