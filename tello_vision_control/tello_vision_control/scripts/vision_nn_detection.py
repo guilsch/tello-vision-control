@@ -14,7 +14,7 @@ from tello_vision_control import vision_tools
 ##### Init detetction network (SSD Mobilenet)
 # Init network
 net = vision_tools.initDetectionModel(weightsPath=None, configPath=None) # paths set to default
-detection_threshold = 0.6
+detection_threshold = 0.5
 
 # Get objects labels
 classNames = vision_tools.getClassNames(fileAdress=None) # path set to default

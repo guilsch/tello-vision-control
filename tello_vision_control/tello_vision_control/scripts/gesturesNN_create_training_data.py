@@ -23,8 +23,8 @@ from tello_vision_control import vision_tools
 ###########################
 
 ##### Parameters
-classifier_labels_file = 'C:/Users/guilh/OneDrive/Documents/Travail/ETS/Projet/Programme/Codes/labels.csv'
-keypoints_output_csv = 'C:/Users/guilh/OneDrive/Documents/Travail/ETS/Projet/Programme/Codes/keypoint.csv'
+classifier_labels_file = 'model/labels.csv'
+keypoints_output_csv = 'model/keypoint.csv'
 video_adress = None
 
 ##### Initialization

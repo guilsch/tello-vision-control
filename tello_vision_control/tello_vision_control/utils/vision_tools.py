@@ -77,7 +77,7 @@ def createColorGrading(param):
     object to show the depth of the object.
 
     Args:
-        param (float): z-coordinate of an object
+        param (float): z-coordinate of an object (from getBoxCenterCoord3D())
 
     Returns:
         color
@@ -263,6 +263,18 @@ def detectWithYOLO(net, image, confThresh):
 ######## KEYPOINTS ########
 ###########################
 
+def flatten_list(_2d_list):
+    flat_list = []
+    # Iterate through the outer list
+    for element in _2d_list:
+        if type(element) is list:
+            # If the element is of type list, iterate through the sublist
+            for item in element:
+                flat_list.append(item)
+        else:
+            flat_list.append(element)
+    return flat_list
+
 def getCentroidFromKeypoints(keypoints):
     """ Returns mass center of keypoints cloud
     """
@@ -271,9 +283,14 @@ def getCentroidFromKeypoints(keypoints):
     if num_keypoints != 0:
         x_sum = 0
         y_sum = 0
-        for kp in keypoints:
-            x_sum += kp.pt[0]
-            y_sum += kp.pt[1]
+        Kp = keypoints[0]
+        
+        for kp in Kp:
+            
+            x = kp.pt
+            
+            x_sum += x[0]
+            y_sum += x[1]
 
         x_mean = int(x_sum / num_keypoints)
         y_mean = int(y_sum / num_keypoints)
@@ -315,11 +332,11 @@ def initDetectionModel(weightsPath=None, configPath=None):
     
     """
     if weightsPath is None:
-        weightsPath =  os.path.join(package_dir, 'data/ssd_mobilenet_v3_files', 
+        weightsPath =  os.path.join(package_dir, 'data/ssd_mobilenet_v3', 
                                     'frozen_inference_graph.pb')
     
     if configPath is None:
-        configPath =  os.path.join(package_dir, 'data/ssd_mobilenet_v3_files', 
+        configPath =  os.path.join(package_dir, 'data/ssd_mobilenet_v3', 
                                    'ssd_mobilenet_v3_large_coco_2020_01_14.pbtxt')
         
     net = cv2.dnn_DetectionModel(weightsPath, configPath)
@@ -336,7 +353,7 @@ def getClassNames(fileAdress=None):
     
     """
     if fileAdress is None:
-        fileAdress =  os.path.join(package_dir, 'data/ssd_mobilenet_v3_files', 
+        fileAdress =  os.path.join(package_dir, 'data/ssd_mobilenet_v3', 
                                    'coco.names')
     
     classNames= []
@@ -411,21 +428,6 @@ def getLandmarkCoord(pose, num_landmark, w_image, h_image, head_size_ref = 20, h
         success = True
       
     return success, coord
-
-
-# def convertNormCoordToImageCoord(x, y, w_image, h_image):
-#     """Convert coordinates x and y from 0.0-1.0 reference to image-size reference (e.g. 0-720)
-
-#     Args:
-#         x (_type_): 0.0 to 1.0 x coordinate
-#         y (_type_): 0.0 to 1.0 y coordinate
-#         w_image (_type_): image size reference
-#         h_image (_type_): image size reference
-
-#     Returns:
-#         _type_: x, y in the image size reference
-#     """
-#     return int(x*w_image), int(y*h_image)
 
 
 def get_labels_list(adress=None):

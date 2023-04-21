@@ -21,8 +21,8 @@ mp_pose = mp.solutions.pose
 pose_detector = mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5)
 
 # PID relative to Yaw, X, Z, in the drone frame
-PID_YAW = drone_tools.PID(0.5, 0, 0.5)
-PID_Z = drone_tools.PID(0.5, 0, 0.5)
+PID_YAW = drone_tools.PID(0.5, 0, 0)
+PID_Z = drone_tools.PID(0.5, 0, 0)
 
 PID_YAW_Manager = drone_tools.PIDManager(PID_YAW)
 PID_Z_Manager = drone_tools.PIDManager(PID_Z)

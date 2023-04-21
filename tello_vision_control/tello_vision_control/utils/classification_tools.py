@@ -7,40 +7,6 @@ import tello_vision_control
 package_dir = os.path.dirname(tello_vision_control.__file__)
 
 
-def save_classifier_to_TFLite(classifier, tflite_save_path = 'data/keypoint_classifier.tflite'):
-    """ Save the TF classifier to TFLite in the specified file
-
-    Args:
-        classifier (_type_): TF classifier (not TFLite)
-        tflite_save_path (str, optional): file where the TFLite model will be saved
-    """
-    converter = tf.lite.TFLiteConverter.from_keras_model(classifier)
-    converter.optimizations = [tf.lite.Optimize.DEFAULT]
-    tflite_quantized_model = converter.convert()
-
-    open(tflite_save_path, 'wb').write(tflite_quantized_model)
-
-
-def create_landmarks_classifier(num_class):
-    """ Create model to be trained
-
-    Args:
-        num_class (int): number of possible outputs (ex: 2 for 'open' and 'close')
-
-    Returns:
-        _type_: model
-    """
-    model = tf.keras.models.Sequential([
-    tf.keras.layers.Input((21 * 2, )),
-    tf.keras.layers.Dropout(0.2),
-    tf.keras.layers.Dense(20, activation='relu'),
-    tf.keras.layers.Dropout(0.4),
-    tf.keras.layers.Dense(10, activation='relu'),
-    tf.keras.layers.Dense(num_class, activation='softmax')
-    ])
-    
-    return model
-
 def get_label_id_from_keyboard(key):
     """ Transform key returned by keyboard to number pressed
 
@@ -64,6 +30,27 @@ def write_new_data(label_id, landmark_list, csv_path='data/keypoint.csv'):
         writer.writerow([label_id, *landmark_list])
         
     return
+
+def create_landmarks_classifier(num_class):
+    """ Create model to be trained
+
+    Args:
+        num_class (int): number of possible outputs (ex: 2 for 'open' and 'close')
+
+    Returns:
+        _type_: model
+    """
+    model = tf.keras.models.Sequential([
+    tf.keras.layers.Input((21 * 2, )),
+    tf.keras.layers.Dropout(0.2),
+    tf.keras.layers.Dense(20, activation='relu'),
+    tf.keras.layers.Dropout(0.4),
+    tf.keras.layers.Dense(10, activation='relu'),
+    tf.keras.layers.Dense(num_class, activation='softmax')
+    ])
+    
+    return model
+
 
 class KeyPointClassifierLoader(object):
     """ TF Lite interpreter corresponding to the classifier used in inference, where the 
@@ -97,3 +84,16 @@ class KeyPointClassifierLoader(object):
         result_index = np.argmax(np.squeeze(result))
 
         return result_index
+    
+def save_classifier_to_TFLite(classifier, tflite_save_path = 'data/keypoint_classifier.tflite'):
+    """ Save the TF classifier to TFLite in the specified file
+
+    Args:
+        classifier (_type_): TF classifier (not TFLite)
+        tflite_save_path (str, optional): file where the TFLite model will be saved
+    """
+    converter = tf.lite.TFLiteConverter.from_keras_model(classifier)
+    converter.optimizations = [tf.lite.Optimize.DEFAULT]
+    tflite_quantized_model = converter.convert()
+
+    open(tflite_save_path, 'wb').write(tflite_quantized_model)

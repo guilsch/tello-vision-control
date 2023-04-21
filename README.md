@@ -11,4 +11,3 @@ This Python library provides tools to tracks objects or persons in a video. It a
 - djitellopy                   2.4.0
 - opencv-python                4.3.0.36
 - mediapipe                    0.9.0.1
-

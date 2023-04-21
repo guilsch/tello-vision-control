@@ -34,9 +34,9 @@ pose_classifier = classification_tools.KeyPointClassifierLoader(tflite_save_path
 hand_states_labels = vision_tools.get_labels_list(labels_path)
 
 # PID relative to Yaw, X, Z, in the drone frame
-PID_YAW = drone_tools.PID(0.5, 0, 0.5)
-PID_X = drone_tools.PID(0.5, 0, 0.5)
-PID_Z = drone_tools.PID(0.5, 0, 0.5)
+PID_YAW = drone_tools.PID(0.5, 0, 0)
+PID_X = drone_tools.PID(0.5, 0, 0)
+PID_Z = drone_tools.PID(0.5, 0, 0)
 
 PID_YAW_Manager = drone_tools.PIDManager(PID_YAW)
 PID_X_Manager = drone_tools.PIDManager(PID_X)

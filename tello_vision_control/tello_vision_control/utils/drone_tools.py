@@ -5,7 +5,8 @@ import numpy as np
 import tkinter as tk
 
 def initTello():
-    
+    """ Connect to the tello drone and turn the stream on.
+    """
     drone = Tello()
     
     drone.connect()
@@ -18,6 +19,8 @@ def initTello():
     return drone
 
 def getTelloFrame(tello, w = 360, h = 240):
+    """ Returns a frame of the tello drone
+    """
     
     frame = tello.get_frame_read()
     frame = frame.frame
@@ -27,6 +30,8 @@ def getTelloFrame(tello, w = 360, h = 240):
 
 
 class PID:
+    """PID controller
+    """
     
     def __init__(self, Kp=0.2, Ki=0.0, Kd=0.0):
         self.Kp = Kp
@@ -58,6 +63,14 @@ class PID:
         return self.Kp*PTerm + self.Ki*self.ITerm + self.Kd*DTerm
     
     def updateGains(self, Kp, Ki, Kd):
+        
+        def isfloat(value):
+            try:
+                float(value)
+                return True
+            except ValueError:
+                return False
+        
         if isfloat(Kp):
             self.Kp = float(Kp)
         if isfloat(Ki):
@@ -65,14 +78,7 @@ class PID:
         if isfloat(Kd):
             self.Kd = float(Kd)
         
-def isfloat(value):
-        try:
-            float(value)
-            return True
-        except ValueError:
-            return False  
-
-
+  
 def PIDManager(PID, windowName="PID gains"):
     """ Creates a window with PID gains entries. Modifies PID gains when pressing the button.
         You must add window.update() in the loop
@@ -129,7 +135,19 @@ def PIDManager(PID, windowName="PID gains"):
 
 
 def controlDrone(drone, err, PID_Z, PID_YAW, PID_X = None, debug = False):
-    
+    """Apply PID and staturator, send RC commands to the drone (if not debug).
+
+    Args:
+        drone: tello drone
+        err: List or errors returned by getError()
+        PID_Z (PID): PID for Z axis
+        PID_YAW (PID): PID for Yaw
+        PID_X (PID, optional): PID for X axis. Defaults to None (in case of 2D movement).
+        debug (bool, optional): True if drone dosen't fly. Defaults to False.
+
+    Returns:
+        list: RC command
+    """
     err_X = err[0]
     err_Z = err[1]
     err_YAW = err[2]
